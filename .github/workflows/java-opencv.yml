@@ -2,9 +2,9 @@ name: Java CI with OpenCV
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, master ]
 
 jobs:
   build:
@@ -22,15 +22,37 @@ jobs:
       - name: Install build dependencies
         run: sudo apt-get update && sudo apt-get install -y build-essential cmake git ant pkg-config unzip wget
 
-      - name: Build OpenCV Java
-        run: bash install_opencv_java.sh
+      - name: Create libs directory
+        run: mkdir -p libs
+
+      - name: Download webcam-capture jar
+        run: wget -O libs/webcam-capture-0.3.12.jar https://repo1.maven.org/maven2/com/github/sarxos/webcam-capture/0.3.12/webcam-capture-0.3.12.jar
+
+      - name: Download BridJ dependency
+        run: wget -O libs/bridj-0.7.0.jar https://repo1.maven.org/maven2/com/nativelibs4java/bridj/0.7.0/bridj-0.7.0.jar
+
+      - name: Download SLF4J dependency
+        run: wget -O libs/slf4j-api-1.7.36.jar https://repo1.maven.org/maven2/org/slf4j/slf4j-api/1.7.36/slf4j-api-1.7.36.jar
+
+      - name: Download logback-classic for logging
+        run: |
+          wget -O libs/logback-classic-1.2.13.jar https://repo1.maven.org/maven2/ch/qos/logback/logback-classic/1.2.13/logback-classic-1.2.13.jar
+          wget -O libs/logback-core-1.2.13.jar https://repo1.maven.org/maven2/ch/qos/logback/logback-core/1.2.13/logback-core-1.2.13.jar
 
       - name: Compile Java source
-        run: javac -cp .:libs/opencv-4.7.0.jar src/Main.java
+        run: javac -cp "libs/*" src/Main.java
 
-      - name: Run application (headless test)
+      - name: Create manifest file
         run: |
-          xvfb-run -a java -cp .:libs/opencv-4.7.0.jar -Djava.library.path=libs/native src.Main &
+          echo 'Main-Class: Main' > manifest.txt
+
+      - name: Package application as jar
+        run: |
+          jar cfm UselessProgram.jar manifest.txt -C src . -C libs .
+
+      - name: Run application from jar (headless test)
+        run: |
+          xvfb-run -a java -jar UselessProgram.jar &
           sleep 10
           pkill java
         env:

@@ -1,13 +1,16 @@
-// Για να λειτουργήσει η κάμερα, κατέβασε το OpenCV jar από:
-// https://opencv.org/releases/
-// και τοποθέτησέ το στον φάκελο libs/ του project σου.
-// Πρόσθεσε το jar στο classpath κατά το compile/run.
-//
-// Ενδεικτική εντολή compile:
-// javac -cp .:libs/opencv-xxx.jar src/Main.java
-//
-// Ενδεικτική εντολή run:
-// java -cp .:libs/opencv-xxx.jar src.Main
+/*
+ * Χρησιμοποιείται πλέον το sarxos/webcam-capture για τη λήψη φωτογραφίας από την κάμερα.
+ * Κατέβασε το jar από https://github.com/sarxos/webcam-capture/releases ή μέσω Maven Central.
+ * Τοποθέτησέ το στον φάκελο libs/ του project σου.
+ *
+ * Ενδεικτική εντολή compile:
+ * javac -cp "libs/*" src/Main.java
+ *
+ * Ενδεικτική εντολή run:
+ * java -cp "libs/*:src" Main
+ *
+ * Για logging, κατέβασε και τα logback-classic-1.2.13.jar και logback-core-1.2.13.jar στο libs/.
+ */
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,11 +19,10 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.util.Random;
 import javax.imageio.ImageIO;
-import org.opencv.core.Core;
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfByte;
-import org.opencv.videoio.VideoCapture;
-import org.opencv.imgcodecs.Imgcodecs;
+import com.github.sarxos.webcam.Webcam;
+import com.github.sarxos.webcam.WebcamResolution;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class Main {
     public static void main(String[] args) {
@@ -29,6 +31,7 @@ public class Main {
 }
 
 class BackgroundSnap {
+    private static final Logger logger = LoggerFactory.getLogger(BackgroundSnap.class);
     private final Random random = new Random();
     private final int minDelay = 10; // seconds
     private final int maxDelay = 30; // seconds
@@ -38,12 +41,13 @@ class BackgroundSnap {
         while (true) {
             try {
                 int delay = minDelay + random.nextInt(maxDelay - minDelay + 1);
+                logger.info("Sleeping for {} seconds before next capture", delay);
                 Thread.sleep(delay * 1000L);
                 BufferedImage screenshot = takeScreenshot();
                 BufferedImage webcam = takeWebcamPhoto();
                 showImages(screenshot, webcam);
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Exception in main loop", e);
             }
         }
     }
@@ -56,32 +60,25 @@ class BackgroundSnap {
 
     private BufferedImage takeWebcamPhoto() {
         try {
-            try {
-                System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
-            } catch (UnsatisfiedLinkError e) {
-                System.err.println("Failed to load OpenCV native library. Please ensure it is correctly set up.");
+            Webcam webcam = Webcam.getDefault();
+            if (webcam == null) {
+                logger.error("Webcam not found!");
                 return null;
             }
-            VideoCapture camera = new VideoCapture(0);
-            if (!camera.isOpened()) {
-                System.err.println("Webcam not found!");
+            if (!webcam.isOpen()) {
+                webcam.setViewSize(WebcamResolution.VGA.getSize());
+                webcam.open();
+            }
+            BufferedImage image = webcam.getImage();
+            webcam.close();
+            if (image == null) {
+                logger.error("No frame captured from webcam!");
                 return null;
             }
-            Mat frame = new Mat();
-            // Δώσε λίγο χρόνο στην κάμερα να "ξυπνήσει"
-            Thread.sleep(500);
-            camera.read(frame);
-            camera.release();
-            if (frame.empty()) {
-                System.err.println("No frame captured from webcam!");
-                return null;
-            }
-            MatOfByte mob = new MatOfByte();
-            Imgcodecs.imencode(".jpg", frame, mob);
-            byte[] byteArray = mob.toArray();
-            return ImageIO.read(new ByteArrayInputStream(byteArray));
+            logger.info("Webcam image captured successfully");
+            return image;
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Exception while capturing webcam image", e);
             return null;
         }
     }
@@ -96,7 +93,7 @@ class BackgroundSnap {
         if (img2 != null) {
             frame.add(new JLabel(new ImageIcon(img2)));
         } else {
-            frame.add(new JLabel(new JLabel("No webcam image")));
+            frame.add(new JLabel("No webcam image"));
         }
         frame.pack();
         frame.setLocationRelativeTo(null);

@@ -21,31 +21,32 @@
 
 ## Απαιτήσεις
 - Java (JDK 8 ή νεότερο)
-- OpenCV 4.7.0 (Java bindings και native library)
-- Linux OS (δοκιμασμένο)
+- [webcam-capture](https://github.com/sarxos/webcam-capture) 0.3.12
+- Linux, Windows ή macOS
 
 ## Οδηγίες Εγκατάστασης
 
-### 1. Δημιουργία των βιβλιοθηκών OpenCV για Java
-Αν δεν έχετε τα απαραίτητα αρχεία OpenCV για Java, τρέξτε το παρακάτω script:
-
-```bash
-bash install_opencv_java.sh
-```
-Αυτό θα κατεβάσει, θα κάνει build και θα τοποθετήσει το jar και το native .so στα `libs/` και `libs/native/`.
+### 1. Κατέβασε τα jars (αυτό γίνεται αυτόματα στο CI):
+- `webcam-capture-0.3.12.jar`
+- `bridj-0.7.0.jar`
+- `slf4j-api-1.7.36.jar`
+- `logback-classic-1.2.13.jar`
+- `logback-core-1.2.13.jar`
 
 ### 2. Μεταγλώττιση
 ```bash
-javac -cp .:libs/opencv-4.7.0.jar src/Main.java
+javac -cp "libs/*" src/Main.java
 ```
 
 ### 3. Εκτέλεση
 ```bash
-java -cp .:libs/opencv-4.7.0.jar -Djava.library.path=libs/native src.Main
+java -cp "libs/*:src" Main
 ```
 
+## Logging
+Για να βλέπετε logs, χρησιμοποιείται το SLF4J με logback. Υπάρχει έτοιμο αρχείο `logback.xml` για βασική ρύθμιση.
+
 ## Σημειώσεις
-- Αν δείτε σφάλματα σχετικά με την κάμερα ή το native library, βεβαιωθείτε ότι η κάμερα είναι συνδεδεμένη και το `.so` αρχείο ταιριάζει με την αρχιτεκτονική του συστήματός σας.
 - Μπορείτε να αλλάξετε τα ελάχιστα/μέγιστα διαστήματα και το χρόνο εμφάνισης αλλάζοντας τις μεταβλητές `minDelay`, `maxDelay`, και `displayTime` στο `Main.java`.
 
 ## Άδεια Χρήσης

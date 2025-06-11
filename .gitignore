@@ -1,1 +1,33 @@
+# Java
+*.class
+*.jar
+
+# Libraries
+libs/
+
+# Build artifacts
+manifest.txt
+UselessProgram.jar
+
+# System
+.DS_Store
+Thumbs.db
+
+# VSCode
+.vscode/
+
+# OS generated
+*.swp
+*~
+
+# Logs
+*.log
+
+# Test output
+/test-output/
+
+# GitHub Actions
+.github/
+
+# Old
 /bin
