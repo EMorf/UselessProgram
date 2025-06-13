@@ -7,17 +7,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.util.Random;
-import org.opencv.core.Core;
-import org.opencv.core.Mat;
-import org.opencv.videoio.VideoCapture;
-import org.opencv.videoio.Videoio;
-import org.opencv.imgproc.Imgproc;
+import java.io.InputStream;
+import javax.imageio.ImageIO;
+import org.bytedeco.javacv.*;
+import org.bytedeco.javacv.Frame;
+import org.bytedeco.opencv.opencv_core.*;
+import static org.bytedeco.opencv.global.opencv_imgproc.*;
 
 public class Main {
-    static {
-        nu.pattern.OpenCV.loadLocally();
-    }
-    
     public static void main(String[] args) {
         new BackgroundSnap().start();
     }
@@ -28,11 +25,30 @@ class BackgroundSnap {
     private final int minDelay = 5;
     private final int maxDelay = 10;
     private final int displayTime = 3;
-    private final VideoCapture camera;
+    private final OpenCVFrameGrabber camera;
+    private final Java2DFrameConverter converter;
+    private BufferedImage dwarfImage;
 
     public BackgroundSnap() {
-        camera = new VideoCapture();
-        camera.open(0);
+        camera = new OpenCVFrameGrabber(0);
+        converter = new Java2DFrameConverter();
+        try {
+            camera.start();
+        } catch (Exception e) {
+            System.err.println("Failed to start camera: " + e.getMessage());
+        }
+        loadDwarfImage();
+    }
+
+    private void loadDwarfImage() {
+        try {
+            InputStream is = getClass().getResourceAsStream("/dwarf.png");
+            if (is != null) {
+                dwarfImage = ImageIO.read(is);
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to load dwarf image: " + e.getMessage());
+        }
     }
 
     public void start() {
@@ -57,22 +73,14 @@ class BackgroundSnap {
 
     private BufferedImage takeWebcamPhoto() {
         try {
-            if (camera.isOpened()) {
-                Mat frame = new Mat();
-                if (camera.read(frame)) {
-                    Mat colorFrame = new Mat();
-                    Imgproc.cvtColor(frame, colorFrame, Imgproc.COLOR_BGR2RGB);
-                    BufferedImage image = new BufferedImage(
-                        colorFrame.width(), colorFrame.height(), BufferedImage.TYPE_3BYTE_BGR);
-                    byte[] data = ((java.awt.image.DataBufferByte) image.getRaster().getDataBuffer()).getData();
-                    colorFrame.get(0, 0, data);
-                    return image;
-                }
+            Frame frame = camera.grab();
+            if (frame != null) {
+                return converter.convert(frame);
             }
         } catch (Exception e) {
-            // Silent fail
+            System.err.println("Webcam error: " + e.getMessage());
         }
-        return null;
+        return dwarfImage; // Return dwarf image as fallback
     }
 
     private void showImages(BufferedImage img1, BufferedImage img2) {
@@ -82,11 +90,7 @@ class BackgroundSnap {
         frame.setUndecorated(true);
         frame.setLayout(new GridLayout(1, 2));
         frame.add(new JLabel(new ImageIcon(img1)));
-        if (img2 != null) {
-            frame.add(new JLabel(new ImageIcon(img2)));
-        } else {
-            frame.add(new JLabel("No webcam image"));
-        }
+        frame.add(new JLabel(new ImageIcon(img2 != null ? img2 : dwarfImage)));
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
