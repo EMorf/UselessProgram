@@ -83,14 +83,19 @@ class BackgroundSnap {
             try {
                 int delay = minDelay + random.nextInt(maxDelay - minDelay + 1);
                 Thread.sleep(delay * 1000L);
+                
+                // Take and scale screenshot first
                 BufferedImage screenshot = takeScreenshot();
-                BufferedImage photo = takeWebcamPhoto();
                 if (screenshot != null) {
                     screenshot = scaleImage(screenshot);
                 }
+                
+                // Take webcam photo last, right before showing images
+                BufferedImage photo = takeWebcamPhoto();
                 if (photo != null) {
                     photo = scaleImage(photo);
                 }
+                
                 showImages(screenshot, photo);
             } catch (Exception e) {
                 System.err.println("Error in main loop: " + e.getMessage());

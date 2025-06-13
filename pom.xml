@@ -14,7 +14,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <javacv.version>1.5.9</javacv.version>
+        <javacv.version>1.5.8</javacv.version>
     </properties>
 
     <dependencies>
@@ -25,8 +25,14 @@
         </dependency>
         <dependency>
             <groupId>org.bytedeco</groupId>
-            <artifactId>opencv-platform</artifactId>
+            <artifactId>opencv</artifactId>
             <version>${javacv.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>opencv</artifactId>
+            <version>${javacv.version}</version>
+            <classifier>macosx-arm64</classifier>
         </dependency>
     </dependencies>
 
