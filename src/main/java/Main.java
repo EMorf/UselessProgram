@@ -7,15 +7,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.util.Random;
-import com.github.sarxos.webcam.Webcam;
-import com.github.sarxos.webcam.WebcamDriver;
-import com.github.sarxos.webcam.ds.openimaj.OpenImajDriver;
+import marvin.video.MarvinJavaCVAdapter;
+import marvin.video.MarvinVideoInterface;
 
 public class Main {
-    static {
-        Webcam.setDriver(new OpenImajDriver());
-    }
-    
     public static void main(String[] args) {
         new BackgroundSnap().start();
     }
@@ -26,13 +21,11 @@ class BackgroundSnap {
     private final int minDelay = 5;
     private final int maxDelay = 10;
     private final int displayTime = 3;
-    private final Webcam webcam;
+    private final MarvinVideoInterface videoAdapter;
 
     public BackgroundSnap() {
-        webcam = Webcam.getDefault();
-        if (webcam != null) {
-            webcam.open();
-        }
+        videoAdapter = new MarvinJavaCVAdapter();
+        videoAdapter.connect(0);
     }
 
     public void start() {
@@ -57,9 +50,7 @@ class BackgroundSnap {
 
     private BufferedImage takeWebcamPhoto() {
         try {
-            if (webcam != null && webcam.isOpen()) {
-                return webcam.getImage();
-            }
+            return videoAdapter.getFrame();
         } catch (Exception e) {
             // Silent fail
         }
