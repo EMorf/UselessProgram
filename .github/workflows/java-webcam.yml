@@ -9,9 +9,13 @@ on:
 jobs:
   build:
     runs-on: macos-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -20,19 +24,59 @@ jobs:
           java-version: '17'
           cache: 'maven'
 
+      - name: Configure Git
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+
+      - name: Get Current Version
+        id: get_version
+        run: echo "CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_OUTPUT
+
+      - name: Calculate Next Version
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+        id: calc_version
+        run: |
+          CURRENT_VERSION=${{ steps.get_version.outputs.CURRENT_VERSION }}
+          IFS='.' read -r -a VERSION_PARTS <<< "$CURRENT_VERSION"
+          NEXT_PATCH=$((VERSION_PARTS[2] + 1))
+          NEXT_VERSION="${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.$NEXT_PATCH"
+          echo "NEXT_VERSION=$NEXT_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Update Version
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+        run: |
+          mvn versions:set -DnewVersion=${{ steps.calc_version.outputs.NEXT_VERSION }}
+          git commit -am "Bump version to ${{ steps.calc_version.outputs.NEXT_VERSION }}"
+
       - name: Build with Maven
         run: mvn -B package assembly:single
 
       - name: Test jar contents
-        run: jar tf target/useless-program-1.0-SNAPSHOT-jar-with-dependencies.jar
-
-      - name: Upload jar as GitHub Actions artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: UselessProgram-jar
-          path: target/useless-program-1.0-SNAPSHOT-jar-with-dependencies.jar
+        run: |
+          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          jar tf target/useless-program-${VERSION}-jar-with-dependencies.jar
 
       - name: Run application from jar
         run: |
-          (java -jar target/useless-program-1.0-SNAPSHOT-jar-with-dependencies.jar & P=$!; sleep 10; kill -9 $P 2>/dev/null || true)
+          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+          (java -jar target/useless-program-${VERSION}-jar-with-dependencies.jar & P=$!; sleep 10; kill -9 $P 2>/dev/null || true)
+
+      - name: Create Release
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.calc_version.outputs.NEXT_VERSION }}
+          name: Release v${{ steps.calc_version.outputs.NEXT_VERSION }}
+          files: target/useless-program-${{ steps.calc_version.outputs.NEXT_VERSION }}-jar-with-dependencies.jar
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push Version Update
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+        run: |
+          git push
+          git push --tags
 
