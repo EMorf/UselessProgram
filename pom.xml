@@ -25,9 +25,8 @@
         </dependency>
         <dependency>
             <groupId>org.bytedeco</groupId>
-            <artifactId>opencv</artifactId>
+            <artifactId>opencv-platform</artifactId>
             <version>${javacv.version}</version>
-            <classifier>macosx-arm</classifier>
         </dependency>
     </dependencies>
 
