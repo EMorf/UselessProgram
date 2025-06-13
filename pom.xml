@@ -17,27 +17,11 @@
     </properties>
 
     <dependencies>
+        <!-- JavaCV for webcam capture - works natively on all platforms -->
         <dependency>
-            <groupId>com.github.sarxos</groupId>
-            <artifactId>webcam-capture</artifactId>
-            <version>0.3.12</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>ch.qos.logback</groupId>
-                    <artifactId>logback-classic</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <!-- GStreamer driver for better ARM support -->
-        <dependency>
-            <groupId>com.github.sarxos</groupId>
-            <artifactId>webcam-capture-driver-gstreamer</artifactId>
-            <version>0.3.12</version>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-nop</artifactId>
-            <version>1.7.36</version>
+            <groupId>org.bytedeco</groupId>
+            <artifactId>javacv-platform</artifactId>
+            <version>1.5.9</version>
         </dependency>
     </dependencies>
 

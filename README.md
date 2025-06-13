@@ -22,14 +22,7 @@
 ## Απαιτήσεις
 - Java 17 ή νεότερο
 - Maven 3.6 ή νεότερο
-- Linux, Windows ή macOS
-- GStreamer (για macOS χρήστες)
-
-### Εγκατάσταση GStreamer σε macOS
-Εάν χρησιμοποιείτε macOS (συμπεριλαμβανομένων των M1/M2 Macs), θα χρειαστεί να εγκαταστήσετε το GStreamer:
-```bash
-brew install gstreamer gst-plugins-base gst-plugins-good
-```
+- Linux, Windows ή macOS (συμπεριλαμβάνει Intel και M1/M2 Macs)
 
 ## Οδηγίες Εγκατάστασης
 
@@ -52,7 +45,7 @@ java -jar target/useless-program-1.0-SNAPSHOT-jar-with-dependencies.jar
 
 ## Σημειώσεις
 - Μπορείτε να αλλάξετε τα ελάχιστα/μέγιστα διαστήματα και το χρόνο εμφάνισης αλλάζοντας τις μεταβλητές `minDelay`, `maxDelay`, και `displayTime` στο `Main.java`.
-- Το πρόγραμμα χρησιμοποιεί τον GStreamer driver για καλύτερη συμβατότητα με macOS (ειδικά για M1/M2 Macs). Αν δεν είναι διαθέσιμο το GStreamer, θα χρησιμοποιήσει αυτόματα τον προεπιλεγμένο driver.
+- Το πρόγραμμα χρησιμοποιεί το JavaCV για πλήρη συμβατότητα με όλες τις πλατφόρμες, συμπεριλαμβανομένων των M1/M2 Macs.
 
 ## Άδεια Χρήσης
 Δείτε το αρχείο LICENSE.

@@ -16,11 +16,9 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.util.Random;
-import javax.imageio.ImageIO;
-import com.github.sarxos.webcam.Webcam;
-import com.github.sarxos.webcam.WebcamResolution;
+import org.bytedeco.javacv.*;
+import org.bytedeco.opencv.opencv_core.Mat;
 import com.github.sarxos.webcam.ds.buildin.WebcamDefaultDriver;
 import com.github.sarxos.webcam.ds.gstreamer.GStreamerDriver;
 
@@ -68,17 +66,12 @@ class BackgroundSnap {
 
     private BufferedImage takeWebcamPhoto() {
         try {
-            Webcam webcam = Webcam.getDefault();
-            if (webcam == null) {
-                System.err.println("Webcam not found!");
-                return null;
-            }
-            if (!webcam.isOpen()) {
-                webcam.setViewSize(WebcamResolution.VGA.getSize());
-                webcam.open();
-            }
-            BufferedImage image = webcam.getImage();
-            webcam.close();
+            OpenCVFrameGrabber grabber = new OpenCVFrameGrabber(0);
+            grabber.start();
+            Frame frame = grabber.grab();
+            Java2DFrameConverter converter = new Java2DFrameConverter();
+            BufferedImage image = converter.convert(frame);
+            grabber.stop();
             if (image == null) {
                 System.err.println("No frame captured from webcam!");
                 return null;
