@@ -1,5 +1,5 @@
 import javax.swing.*;
-import java.awt.Rectangle;
+import java.awt.*;
 import java.awt.Robot;
 import java.awt.Toolkit;
 import java.awt.GridLayout;
@@ -27,10 +27,16 @@ class BackgroundSnap {
     private final OpenCVFrameGrabber camera;
     private final Java2DFrameConverter converter;
     private BufferedImage dwarfImage;
+    private final Dimension screenSize;
+    private final int targetWidth;
+    private final int targetHeight;
 
     public BackgroundSnap() {
         camera = new OpenCVFrameGrabber(0);
         converter = new Java2DFrameConverter();
+        screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        targetWidth = screenSize.width / 2;  // Half the screen width for each image
+        targetHeight = screenSize.height;
         try {
             camera.start();
         } catch (Exception e) {
@@ -44,10 +50,32 @@ class BackgroundSnap {
             InputStream is = getClass().getResourceAsStream("/dwarf.jpg");
             if (is != null) {
                 dwarfImage = ImageIO.read(is);
+                dwarfImage = scaleImage(dwarfImage);
+                is.close();
             }
         } catch (Exception e) {
             System.err.println("Failed to load dwarf image: " + e.getMessage());
         }
+    }
+
+    private BufferedImage scaleImage(BufferedImage original) {
+        if (original == null) return null;
+        
+        double scaleFactor = Math.min(
+            (double) targetWidth / original.getWidth(),
+            (double) targetHeight / original.getHeight()
+        );
+        
+        int newWidth = (int) (original.getWidth() * scaleFactor);
+        int newHeight = (int) (original.getHeight() * scaleFactor);
+        
+        BufferedImage resized = new BufferedImage(newWidth, newHeight, original.getType());
+        Graphics2D g2d = resized.createGraphics();
+        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g2d.drawImage(original, 0, 0, newWidth, newHeight, null);
+        g2d.dispose();
+        
+        return resized;
     }
 
     public void start() {
@@ -57,16 +85,22 @@ class BackgroundSnap {
                 Thread.sleep(delay * 1000L);
                 BufferedImage screenshot = takeScreenshot();
                 BufferedImage photo = takeWebcamPhoto();
+                if (screenshot != null) {
+                    screenshot = scaleImage(screenshot);
+                }
+                if (photo != null) {
+                    photo = scaleImage(photo);
+                }
                 showImages(screenshot, photo);
             } catch (Exception e) {
-                // Silent fail
+                System.err.println("Error in main loop: " + e.getMessage());
             }
         }
     }
 
     private BufferedImage takeScreenshot() throws Exception {
         Robot robot = new Robot();
-        Rectangle screenRect = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
+        Rectangle screenRect = new Rectangle(screenSize);
         return robot.createScreenCapture(screenRect);
     }
 
@@ -88,11 +122,14 @@ class BackgroundSnap {
         frame.setAlwaysOnTop(true);
         frame.setUndecorated(true);
         frame.setLayout(new GridLayout(1, 2));
-        frame.add(new JLabel(new ImageIcon(img1)));
-        frame.add(new JLabel(new ImageIcon(img2 != null ? img2 : dwarfImage)));
+        
+        if (img1 != null) frame.add(new JLabel(new ImageIcon(img1)));
+        if (img2 != null) frame.add(new JLabel(new ImageIcon(img2 != null ? img2 : dwarfImage)));
+        
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true);
+
         new Timer(displayTime * 1000, new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 frame.setVisible(false);
