@@ -1,37 +1,17 @@
-/*
- * Χρησιμοποιείται πλέον το sarxos/webcam-capture για τη λήψη φωτογραφίας από την κάμερα.
- * Κατέβασε το jar από https://github.com/sarxos/webcam-capture/releases ή μέσω Maven Central.
- * Τοποθέτησέ το στον φάκελο libs/ του project σου.
- *
- * Ενδεικτική εντολή compile:
- * javac -cp "libs/*" src/Main.java
- *
- * Ενδεικτική εντολή run:
- * java -cp "libs/*:src" Main
- *
- * Για logging, κατέβασε και τα logback-classic-1.2.13.jar και logback-core-1.2.13.jar στο libs/.
- */
-
 import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.Rectangle;
+import java.awt.Robot;
+import java.awt.Toolkit;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.util.Random;
-import org.bytedeco.javacv.*;
-import org.bytedeco.opencv.opencv_core.Mat;
-import com.github.sarxos.webcam.ds.buildin.WebcamDefaultDriver;
-import com.github.sarxos.webcam.ds.gstreamer.GStreamerDriver;
+import org.bytedeco.javacv.Frame;
+import org.bytedeco.javacv.OpenCVFrameGrabber;
+import org.bytedeco.javacv.Java2DFrameConverter;
 
 public class Main {
-    static {
-        try {
-            Webcam.setDriver(new GStreamerDriver());
-        } catch (Exception e) {
-            System.out.println("Falling back to default driver: " + e.getMessage());
-            Webcam.setDriver(new WebcamDefaultDriver());
-        }
-    }
-
     public static void main(String[] args) {
         new BackgroundSnap().start();
     }
