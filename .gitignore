@@ -1,13 +1,16 @@
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+
 # Java
 *.class
-*.jar
-
-# Libraries
-libs/
-
-# Build artifacts
-manifest.txt
-UselessProgram.jar
 
 # System
 .DS_Store
@@ -25,9 +28,6 @@ Thumbs.db
 
 # Test output
 /test-output/
-
-# GitHub Actions
-.github/
 
 # Old
 /bin
