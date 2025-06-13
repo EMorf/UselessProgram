@@ -1,51 +1,62 @@
 # UselessProgram
 
-Αυτό το πρόγραμμα Java τρέχει στο παρασκήνιο και, σε τυχαία χρονικά διαστήματα, τραβάει ταυτόχρονα ένα screenshot της οθόνης και μια φωτογραφία από την κάμερα του υπολογιστή. Στη συνέχεια, εμφανίζει και τις δύο εικόνες δίπλα-δίπλα σε ένα παράθυρο που εμφανίζεται πάνω από όλα τα άλλα προγράμματα για λίγα δευτερόλεπτα, ακολουθώντας λογική "Snapchat". Το παράθυρο εξαφανίζεται αυτόματα και η διαδικασία επαναλαμβάνεται.
+A Java application that runs in the background and, at random intervals, simultaneously takes a screenshot of your screen and a photo from your computer's webcam. It then displays both images side by side in a window that appears above all other programs for a few seconds, following a "Snapchat-like" logic. The window disappears automatically, and the process repeats.
 
-## Προδιαγραφή (spec)
-Ένα πρόγραμμα το οποίο ανοίγουμε εμείς και μετά το αφήνουμε να τρέχει στο παρασκήνιο.
+## Features
+- Runs in the background
+- Takes screenshots and webcam photos at random intervals
+- Displays images side by side for a few seconds
+- Window always appears on top and closes automatically
+- Scales images to fit screen size
+- Works on all major platforms including Apple Silicon Macs
 
-Ανά τυχαία χρονικα διαστήματα, αυτό θα βγάζει την ίδια στιγμή screenshot και φωτογραφία εμάς μέσω της κάμερας του υπολογιστή.
+## Requirements
+- Java 17 or newer
+- Maven 3.6 or newer
+- Linux, Windows, or macOS (including Intel and Apple Silicon Macs)
+- Webcam
 
-Αφού γίνει αυτό, αμέσως μετά το παράθυρο του πρόγραμματος ανοίγει από μόνο του πάνω απ όλα τ άλλα προγράμματα και μας δείχνει για λίγα δευτερόλεπτα τις φωτογραφίες που μόλις έβγαλε δίπλα-δίπλα.
+## Installation
 
-Οι φωτογραφίες εξαφανίζονται μετά τα λίγα αυτα δευτερόλεπτα, το παράθυρο ενδεχομένως κατεβαίνει μόνο του και συνεχίζουν κανονικά οι υπόλοιπες διεργασίες που γίνονταν πριν. Το πρόγραμμα συνεχίζει και κάνει αυτη τη διαδικασία.
+### Download
+You can download the latest release from the [Releases](https://github.com/sikzone/UselessProgram/releases) page.
 
-Είναι λογική snapchat.
-
-## Χαρακτηριστικά
-- Τρέχει στο παρασκήνιο
-- Τραβάει screenshot και φωτογραφία από την κάμερα σε τυχαία διαστήματα
-- Εμφανίζει τις εικόνες δίπλα-δίπλα για λίγα δευτερόλεπτα
-- Το παράθυρο εμφανίζεται πάντα πάνω από όλα και κλείνει αυτόματα
-
-## Απαιτήσεις
-- Java 17 ή νεότερο
-- Maven 3.6 ή νεότερο
-- Linux, Windows ή macOS (συμπεριλαμβάνει Intel και M1/M2 Macs)
-
-## Οδηγίες Εγκατάστασης
-
-### 1. Κλωνοποίηση του repository
+### Build from Source
+1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/UselessProgram.git
+git clone https://github.com/sikzone/UselessProgram.git
 cd UselessProgram
 ```
 
-### 2. Μεταγλώττιση με Maven
+2. Build with Maven:
 ```bash
 mvn package
 ```
-Αυτό θα δημιουργήσει ένα εκτελέσιμο JAR με όλες τις εξαρτήσεις στο `target/useless-program-1.0-SNAPSHOT-jar-with-dependencies.jar`
+This will create an executable JAR with all dependencies in `target/useless-program-0.0.1-jar-with-dependencies.jar`
 
-### 3. Εκτέλεση
+3. Run:
 ```bash
-java -jar target/useless-program-1.0-SNAPSHOT-jar-with-dependencies.jar
+java -jar target/useless-program-0.0.1-jar-with-dependencies.jar
 ```
 
-## Σημειώσεις
-- Μπορείτε να αλλάξετε τα ελάχιστα/μέγιστα διαστήματα και το χρόνο εμφάνισης αλλάζοντας τις μεταβλητές `minDelay`, `maxDelay`, και `displayTime` στο `Main.java`.
-- Το πρόγραμμα χρησιμοποιεί το JavaCV για πλήρη συμβατότητα με όλες τις πλατφόρμες, συμπεριλαμβανομένων των M1/M2 Macs.
+## Configuration
+The following parameters can be adjusted in `Main.java`:
+- `minDelay`: Minimum time between captures (default: 5 seconds)
+- `maxDelay`: Maximum time between captures (default: 10 seconds)
+- `displayTime`: How long images are displayed (default: 3 seconds)
 
-## Άδεια Χρήσης
-Δείτε το αρχείο LICENSE.
+## Technical Details
+- Uses JavaCV for cross-platform webcam support
+- Built with Java 17 and Maven
+- Automatic image scaling to fit screen resolution
+- Efficient resource management and memory usage
+
+## License
+See the LICENSE file for details.
+
+## Version History
+- 0.0.1: Initial release
+  - Basic screenshot and webcam capture functionality
+  - Random interval captures
+  - Image scaling
+  - Cross-platform support
