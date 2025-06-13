@@ -5,7 +5,7 @@
 
     <groupId>com.example</groupId>
     <artifactId>useless-program</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
 
     <name>Useless Program</name>
     <description>A Snapchat-like program that takes screenshots and webcam photos at random intervals</description>
