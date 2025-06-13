@@ -1,62 +1,75 @@
 # UselessProgram
 
-A Java application that runs in the background and, at random intervals, simultaneously takes a screenshot of your screen and a photo from your computer's webcam. It then displays both images side by side in a window that appears above all other programs for a few seconds, following a "Snapchat-like" logic. The window disappears automatically, and the process repeats.
+Ένα πρόγραμμα Java που τρέχει στο παρασκήνιο και, σε τυχαία χρονικά διαστήματα, τραβάει ταυτόχρονα ένα screenshot της οθόνης και μια φωτογραφία από την κάμερα του υπολογιστή. Στη συνέχεια, εμφανίζει και τις δύο εικόνες δίπλα-δίπλα σε ένα παράθυρο που εμφανίζεται πάνω από όλα τα άλλα προγράμματα για λίγα δευτερόλεπτα, ακολουθώντας λογική "Snapchat". Το παράθυρο εξαφανίζεται αυτόματα και η διαδικασία επαναλαμβάνεται.
 
-## Features
-- Runs in the background
-- Takes screenshots and webcam photos at random intervals
-- Displays images side by side for a few seconds
-- Window always appears on top and closes automatically
-- Scales images to fit screen size
-- Works on all major platforms including Apple Silicon Macs
+## Χαρακτηριστικά
 
-## Requirements
-- Java 17 or newer
-- Maven 3.6 or newer
-- Linux, Windows, or macOS (including Intel and Apple Silicon Macs)
-- Webcam
+- Τρέχει στο παρασκήνιο
+- Τραβάει screenshot και φωτογραφία από την κάμερα σε τυχαία διαστήματα
+- Εμφανίζει τις εικόνες δίπλα-δίπλα για λίγα δευτερόλεπτα
+- Το παράθυρο εμφανίζεται πάντα πάνω από όλα και κλείνει αυτόματα
+- Προσαρμόζει αυτόματα το μέγεθος των εικόνων στην οθόνη
+- Λειτουργεί σε όλες τις πλατφόρμες συμπεριλαμβανομένων των Apple Silicon Macs
 
-## Installation
+## Απαιτήσεις
 
-### Download
-You can download the latest release from the [Releases](https://github.com/sikzone/UselessProgram/releases) page.
+- Java 17 ή νεότερο
+- Maven 3.6 ή νεότερο
+- Linux, Windows ή macOS (συμπεριλαμβάνει Intel και Apple Silicon Macs)
+- Κάμερα
 
-### Build from Source
-1. Clone the repository:
+## Εγκατάσταση
+
+### Λήψη
+
+Μπορείτε να κατεβάσετε την τελευταία έκδοση από τη σελίδα [Releases](https://github.com/sikzone/UselessProgram/releases).
+
+### Δημιουργία από τον Πηγαίο Κώδικα
+
+1. Κλωνοποίηση του repository:
+
 ```bash
 git clone https://github.com/sikzone/UselessProgram.git
 cd UselessProgram
 ```
 
-2. Build with Maven:
-```bash
-mvn package
-```
-This will create an executable JAR with all dependencies in `target/useless-program-0.0.1-jar-with-dependencies.jar`
+2. Μεταγλώττιση με Maven:
 
-3. Run:
 ```bash
-java -jar target/useless-program-0.0.1-jar-with-dependencies.jar
+mvn clean package assembly:single
 ```
 
-## Configuration
-The following parameters can be adjusted in `Main.java`:
-- `minDelay`: Minimum time between captures (default: 5 seconds)
-- `maxDelay`: Maximum time between captures (default: 10 seconds)
-- `displayTime`: How long images are displayed (default: 3 seconds)
+Αυτό θα δημιουργήσει ένα εκτελέσιμο JAR με όλες τις εξαρτήσεις στον φάκελο `target/` με όνομα `useless-program-VERSION-jar-with-dependencies.jar`, όπου VERSION η τρέχουσα έκδοση.
 
-## Technical Details
-- Uses JavaCV for cross-platform webcam support
-- Built with Java 17 and Maven
-- Automatic image scaling to fit screen resolution
-- Efficient resource management and memory usage
+3. Εκτέλεση:
 
-## License
-See the LICENSE file for details.
+```bash
+java -jar target/useless-program-*-jar-with-dependencies.jar
+```
 
-## Version History
-- 0.0.1: Initial release
-  - Basic screenshot and webcam capture functionality
-  - Random interval captures
-  - Image scaling
-  - Cross-platform support
+## Παραμετροποίηση
+
+Οι παρακάτω παράμετροι μπορούν να ρυθμιστούν στο `Main.java`:
+
+- `minDelay`: Ελάχιστος χρόνος μεταξύ λήψεων (προεπιλογή: 5 δευτερόλεπτα)
+- `maxDelay`: Μέγιστος χρόνος μεταξύ λήψεων (προεπιλογή: 10 δευτερόλεπτα)
+- `displayTime`: Διάρκεια εμφάνισης εικόνων (προεπιλογή: 3 δευτερόλεπτα)
+
+## Τεχνικές Λεπτομέρειες
+
+- Χρησιμοποιεί το JavaCV για υποστήριξη κάμερας σε όλες τις πλατφόρμες
+- Κατασκευασμένο με Java 17 και Maven
+- Αυτόματη προσαρμογή μεγέθους εικόνων στην ανάλυση της οθόνης
+- Αποδοτική διαχείριση πόρων και μνήμης
+
+## Άδεια Χρήσης
+
+Δείτε το αρχείο LICENSE για λεπτομέρειες.
+
+## Ιστορικό Εκδόσεων
+
+- 0.0.1: Αρχική έκδοση
+  - Βασική λειτουργικότητα λήψης screenshot και φωτογραφίας
+  - Λήψεις σε τυχαία διαστήματα
+  - Προσαρμογή μεγέθους εικόνων
+  - Υποστήριξη όλων των πλατφορμών
