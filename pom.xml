@@ -5,16 +5,16 @@
 
     <groupId>com.example</groupId>
     <artifactId>useless-program</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.0.1</version>
 
     <name>Useless Program</name>
-    <description>A program that takes a webcam snapshot and saves it.</description>
+    <description>A Snapchat-like program that takes screenshots and webcam photos at random intervals</description>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
-        <javacv.version>1.5.9</javacv.version>
+        <javacv.version>1.5.8</javacv.version>
     </properties>
 
     <dependencies>
