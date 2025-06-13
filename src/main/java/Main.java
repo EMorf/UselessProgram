@@ -19,21 +19,20 @@ public class Main {
 
 class BackgroundSnap {
     private final Random random = new Random();
-    private final int minDelay = 5; // seconds
-    private final int maxDelay = 10; // seconds
-    private final int displayTime = 3; // seconds
+    private final int minDelay = 5;
+    private final int maxDelay = 10;
+    private final int displayTime = 3;
 
     public void start() {
         while (true) {
             try {
                 int delay = minDelay + random.nextInt(maxDelay - minDelay + 1);
-                System.out.println("Sleeping for " + delay + " seconds before next capture");
                 Thread.sleep(delay * 1000L);
                 BufferedImage screenshot = takeScreenshot();
                 BufferedImage webcam = takeWebcamPhoto();
                 showImages(screenshot, webcam);
             } catch (Exception e) {
-                e.printStackTrace();
+                // Silent fail
             }
         }
     }
@@ -52,14 +51,8 @@ class BackgroundSnap {
             Java2DFrameConverter converter = new Java2DFrameConverter();
             BufferedImage image = converter.convert(frame);
             grabber.stop();
-            if (image == null) {
-                System.err.println("No frame captured from webcam!");
-                return null;
-            }
-            System.out.println("Webcam image captured successfully");
             return image;
         } catch (Exception e) {
-            e.printStackTrace();
             return null;
         }
     }
