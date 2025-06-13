@@ -7,11 +7,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.util.Random;
-import java.io.InputStream;
+import java.io.*;
+import java.net.URL;
+import java.net.HttpURLConnection;
 import javax.imageio.ImageIO;
-import org.bytedeco.javacv.*;
-import org.bytedeco.javacv.Frame;
-import static org.bytedeco.opencv.global.opencv_imgproc.*;
+import org.json.JSONObject;
+import org.json.JSONArray;
 
 public class Main {
     public static void main(String[] args) {
@@ -24,18 +25,9 @@ class BackgroundSnap {
     private final int minDelay = 5;
     private final int maxDelay = 10;
     private final int displayTime = 3;
-    private final OpenCVFrameGrabber camera;
-    private final Java2DFrameConverter converter;
     private BufferedImage dwarfImage;
 
     public BackgroundSnap() {
-        camera = new OpenCVFrameGrabber(0);
-        converter = new Java2DFrameConverter();
-        try {
-            camera.start();
-        } catch (Exception e) {
-            System.err.println("Failed to start camera: " + e.getMessage());
-        }
         loadDwarfImage();
     }
 
@@ -56,10 +48,10 @@ class BackgroundSnap {
                 int delay = minDelay + random.nextInt(maxDelay - minDelay + 1);
                 Thread.sleep(delay * 1000L);
                 BufferedImage screenshot = takeScreenshot();
-                BufferedImage photo = takeWebcamPhoto();
-                showImages(screenshot, photo);
+                BufferedImage randomImage = fetchRandomImage();
+                showImages(screenshot, randomImage);
             } catch (Exception e) {
-                // Silent fail
+                System.err.println("Error: " + e.getMessage());
             }
         }
     }
@@ -70,16 +62,20 @@ class BackgroundSnap {
         return robot.createScreenCapture(screenRect);
     }
 
-    private BufferedImage takeWebcamPhoto() {
+    private BufferedImage fetchRandomImage() {
         try {
-            Frame frame = camera.grab();
-            if (frame != null) {
-                return converter.convert(frame);
-            }
+            // First get a random image URL from Picsum
+            URL url = new URL("https://picsum.photos/800/600");
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setInstanceFollowRedirects(true);
+            String finalUrl = conn.getURL().toString();
+            
+            // Now download and create the image
+            return ImageIO.read(new URL(finalUrl));
         } catch (Exception e) {
-            System.err.println("Webcam error: " + e.getMessage());
+            System.err.println("Failed to fetch random image: " + e.getMessage());
+            return dwarfImage; // Return dwarf image as fallback
         }
-        return dwarfImage; // Return dwarf image as fallback
     }
 
     private void showImages(BufferedImage img1, BufferedImage img2) {
