@@ -11,7 +11,6 @@ import java.io.InputStream;
 import javax.imageio.ImageIO;
 import org.bytedeco.javacv.*;
 import org.bytedeco.javacv.Frame;
-import org.bytedeco.opencv.opencv_core.*;
 import static org.bytedeco.opencv.global.opencv_imgproc.*;
 
 public class Main {
@@ -42,7 +41,7 @@ class BackgroundSnap {
 
     private void loadDwarfImage() {
         try {
-            InputStream is = getClass().getResourceAsStream("/dwarf.png");
+            InputStream is = getClass().getResourceAsStream("/dwarf.jpg");
             if (is != null) {
                 dwarfImage = ImageIO.read(is);
             }
