@@ -7,11 +7,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.util.Random;
-import org.bytedeco.javacv.Frame;
-import org.bytedeco.javacv.OpenCVFrameGrabber;
-import org.bytedeco.javacv.Java2DFrameConverter;
+import com.github.sarxos.webcam.Webcam;
+import com.github.sarxos.webcam.WebcamDriver;
+import com.github.sarxos.webcam.ds.openimaj.OpenImajDriver;
 
 public class Main {
+    static {
+        Webcam.setDriver(new OpenImajDriver());
+    }
+    
     public static void main(String[] args) {
         new BackgroundSnap().start();
     }
@@ -22,6 +26,14 @@ class BackgroundSnap {
     private final int minDelay = 5;
     private final int maxDelay = 10;
     private final int displayTime = 3;
+    private final Webcam webcam;
+
+    public BackgroundSnap() {
+        webcam = Webcam.getDefault();
+        if (webcam != null) {
+            webcam.open();
+        }
+    }
 
     public void start() {
         while (true) {
@@ -29,8 +41,8 @@ class BackgroundSnap {
                 int delay = minDelay + random.nextInt(maxDelay - minDelay + 1);
                 Thread.sleep(delay * 1000L);
                 BufferedImage screenshot = takeScreenshot();
-                BufferedImage webcam = takeWebcamPhoto();
-                showImages(screenshot, webcam);
+                BufferedImage photo = takeWebcamPhoto();
+                showImages(screenshot, photo);
             } catch (Exception e) {
                 // Silent fail
             }
@@ -45,16 +57,13 @@ class BackgroundSnap {
 
     private BufferedImage takeWebcamPhoto() {
         try {
-            OpenCVFrameGrabber grabber = new OpenCVFrameGrabber(0);
-            grabber.start();
-            Frame frame = grabber.grab();
-            Java2DFrameConverter converter = new Java2DFrameConverter();
-            BufferedImage image = converter.convert(frame);
-            grabber.stop();
-            return image;
+            if (webcam != null && webcam.isOpen()) {
+                return webcam.getImage();
+            }
         } catch (Exception e) {
-            return null;
+            // Silent fail
         }
+        return null;
     }
 
     private void showImages(BufferedImage img1, BufferedImage img2) {
