@@ -7,10 +7,17 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.util.Random;
-import marvin.video.MarvinJavaCVAdapter;
-import marvin.video.MarvinVideoInterface;
+import org.opencv.core.Core;
+import org.opencv.core.Mat;
+import org.opencv.videoio.VideoCapture;
+import org.opencv.videoio.Videoio;
+import org.opencv.imgproc.Imgproc;
 
 public class Main {
+    static {
+        nu.pattern.OpenCV.loadLocally();
+    }
+    
     public static void main(String[] args) {
         new BackgroundSnap().start();
     }
@@ -21,11 +28,11 @@ class BackgroundSnap {
     private final int minDelay = 5;
     private final int maxDelay = 10;
     private final int displayTime = 3;
-    private final MarvinVideoInterface videoAdapter;
+    private final VideoCapture camera;
 
     public BackgroundSnap() {
-        videoAdapter = new MarvinJavaCVAdapter();
-        videoAdapter.connect(0);
+        camera = new VideoCapture();
+        camera.open(0);
     }
 
     public void start() {
@@ -50,7 +57,18 @@ class BackgroundSnap {
 
     private BufferedImage takeWebcamPhoto() {
         try {
-            return videoAdapter.getFrame();
+            if (camera.isOpened()) {
+                Mat frame = new Mat();
+                if (camera.read(frame)) {
+                    Mat colorFrame = new Mat();
+                    Imgproc.cvtColor(frame, colorFrame, Imgproc.COLOR_BGR2RGB);
+                    BufferedImage image = new BufferedImage(
+                        colorFrame.width(), colorFrame.height(), BufferedImage.TYPE_3BYTE_BGR);
+                    byte[] data = ((java.awt.image.DataBufferByte) image.getRaster().getDataBuffer()).getData();
+                    colorFrame.get(0, 0, data);
+                    return image;
+                }
+            }
         } catch (Exception e) {
             // Silent fail
         }
