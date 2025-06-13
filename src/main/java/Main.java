@@ -21,9 +21,19 @@ import java.util.Random;
 import javax.imageio.ImageIO;
 import com.github.sarxos.webcam.Webcam;
 import com.github.sarxos.webcam.WebcamResolution;
-
+import com.github.sarxos.webcam.ds.buildin.WebcamDefaultDriver;
+import com.github.sarxos.webcam.ds.gstreamer.GStreamerDriver;
 
 public class Main {
+    static {
+        try {
+            Webcam.setDriver(new GStreamerDriver());
+        } catch (Exception e) {
+            System.out.println("Falling back to default driver: " + e.getMessage());
+            Webcam.setDriver(new WebcamDefaultDriver());
+        }
+    }
+
     public static void main(String[] args) {
         new BackgroundSnap().start();
     }
@@ -31,8 +41,8 @@ public class Main {
 
 class BackgroundSnap {
     private final Random random = new Random();
-    private final int minDelay = 10; // seconds
-    private final int maxDelay = 30; // seconds
+    private final int minDelay = 5; // seconds
+    private final int maxDelay = 10; // seconds
     private final int displayTime = 3; // seconds
 
     public void start() {
