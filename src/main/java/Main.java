@@ -21,8 +21,7 @@ import java.util.Random;
 import javax.imageio.ImageIO;
 import com.github.sarxos.webcam.Webcam;
 import com.github.sarxos.webcam.WebcamResolution;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 
 public class Main {
     public static void main(String[] args) {
@@ -31,7 +30,6 @@ public class Main {
 }
 
 class BackgroundSnap {
-    private static final Logger logger = LoggerFactory.getLogger(BackgroundSnap.class);
     private final Random random = new Random();
     private final int minDelay = 10; // seconds
     private final int maxDelay = 30; // seconds
@@ -41,13 +39,13 @@ class BackgroundSnap {
         while (true) {
             try {
                 int delay = minDelay + random.nextInt(maxDelay - minDelay + 1);
-                logger.info("Sleeping for {} seconds before next capture", delay);
+                System.out.println("Sleeping for " + delay + " seconds before next capture");
                 Thread.sleep(delay * 1000L);
                 BufferedImage screenshot = takeScreenshot();
                 BufferedImage webcam = takeWebcamPhoto();
                 showImages(screenshot, webcam);
             } catch (Exception e) {
-                logger.error("Exception in main loop", e);
+                e.printStackTrace();
             }
         }
     }
@@ -62,7 +60,7 @@ class BackgroundSnap {
         try {
             Webcam webcam = Webcam.getDefault();
             if (webcam == null) {
-                logger.error("Webcam not found!");
+                System.err.println("Webcam not found!");
                 return null;
             }
             if (!webcam.isOpen()) {
@@ -72,13 +70,13 @@ class BackgroundSnap {
             BufferedImage image = webcam.getImage();
             webcam.close();
             if (image == null) {
-                logger.error("No frame captured from webcam!");
+                System.err.println("No frame captured from webcam!");
                 return null;
             }
-            logger.info("Webcam image captured successfully");
+            System.out.println("Webcam image captured successfully");
             return image;
         } catch (Exception e) {
-            logger.error("Exception while capturing webcam image", e);
+            e.printStackTrace();
             return null;
         }
     }

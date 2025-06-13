@@ -20,31 +20,28 @@
 - Το παράθυρο εμφανίζεται πάντα πάνω από όλα και κλείνει αυτόματα
 
 ## Απαιτήσεις
-- Java (JDK 8 ή νεότερο)
-- [webcam-capture](https://github.com/sarxos/webcam-capture) 0.3.12
+- Java 17 ή νεότερο
+- Maven 3.6 ή νεότερο
 - Linux, Windows ή macOS
 
 ## Οδηγίες Εγκατάστασης
 
-### 1. Κατέβασε τα jars (αυτό γίνεται αυτόματα στο CI):
-- `webcam-capture-0.3.12.jar`
-- `bridj-0.7.0.jar`
-- `slf4j-api-1.7.36.jar`
-- `logback-classic-1.2.13.jar`
-- `logback-core-1.2.13.jar`
-
-### 2. Μεταγλώττιση
+### 1. Κλωνοποίηση του repository
 ```bash
-javac -cp "libs/*" src/Main.java
+git clone https://github.com/yourusername/UselessProgram.git
+cd UselessProgram
 ```
+
+### 2. Μεταγλώττιση με Maven
+```bash
+mvn package
+```
+Αυτό θα δημιουργήσει ένα εκτελέσιμο JAR με όλες τις εξαρτήσεις στο `target/useless-program-1.0-SNAPSHOT-jar-with-dependencies.jar`
 
 ### 3. Εκτέλεση
 ```bash
-java -cp "libs/*:src" Main
+java -jar target/useless-program-1.0-SNAPSHOT-jar-with-dependencies.jar
 ```
-
-## Logging
-Για να βλέπετε logs, χρησιμοποιείται το SLF4J με logback. Υπάρχει έτοιμο αρχείο `logback.xml` για βασική ρύθμιση.
 
 ## Σημειώσεις
 - Μπορείτε να αλλάξετε τα ελάχιστα/μέγιστα διαστήματα και το χρόνο εμφάνισης αλλάζοντας τις μεταβλητές `minDelay`, `maxDelay`, και `displayTime` στο `Main.java`.

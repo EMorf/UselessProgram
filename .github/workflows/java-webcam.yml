@@ -1,0 +1,39 @@
+name: Java CI with Webcam Capture
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+      - name: Build with Maven
+        run: mvn -B package assembly:single
+
+      - name: Test jar contents
+        run: jar tf target/useless-program-1.0-SNAPSHOT-jar-with-dependencies.jar
+
+      - name: Upload jar as GitHub Actions artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: UselessProgram-jar
+          path: target/useless-program-1.0-SNAPSHOT-jar-with-dependencies.jar
+
+      - name: Run application from jar (headless test)
+        run: |
+          timeout 10s xvfb-run -a java -jar target/useless-program-1.0-SNAPSHOT-jar-with-dependencies.jar || code=$?; if [ $code -eq 124 ]; then exit 0; else exit $code; fi
+        env:
+          DISPLAY: :99
