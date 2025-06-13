@@ -26,7 +26,17 @@
                     <groupId>ch.qos.logback</groupId>
                     <artifactId>logback-classic</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>com.nativelibs4java</groupId>
+                    <artifactId>bridj</artifactId>
+                </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.nativelibs4java</groupId>
+            <artifactId>bridj</artifactId>
+            <version>0.7.0</version>
+            <classifier>c-only</classifier>
         </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
