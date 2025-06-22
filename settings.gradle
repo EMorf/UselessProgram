@@ -1,0 +1,12 @@
+rootProject.name = 'UselessProgram'
+
+// Enable Gradle build cache and parallel execution for faster builds
+buildCache {
+    local {
+        enabled = true
+    }
+}
+
+settingsEvaluated {
+    gradle.startParameter.parallelProjectExecutionEnabled = true
+}

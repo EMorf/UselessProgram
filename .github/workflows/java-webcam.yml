@@ -1,4 +1,4 @@
-name: Java CI with Webcam Capture
+name: Java CI with Gradle and Webcam Capture
 
 on:
   push:
@@ -22,7 +22,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
-          cache: 'maven'
+          cache: 'gradle'
 
       - name: Configure Git
         if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
@@ -30,46 +30,42 @@ jobs:
           git config user.name "GitHub Actions"
           git config user.email "actions@github.com"
 
-      - name: Get Current Version
-        id: get_version
-        run: echo "CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_OUTPUT
-
-      - name: Calculate Next Version
-        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
-        id: calc_version
+      - name: Bump patch version in build.gradle
+        id: bump_version
         run: |
-          CURRENT_VERSION=${{ steps.get_version.outputs.CURRENT_VERSION }}
-          IFS='.' read -r -a VERSION_PARTS <<< "$CURRENT_VERSION"
-          NEXT_PATCH=$((VERSION_PARTS[2] + 1))
-          NEXT_VERSION="${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.$NEXT_PATCH"
-          echo "NEXT_VERSION=$NEXT_VERSION" >> $GITHUB_OUTPUT
+          VERSION_LINE=$(grep '^version' build.gradle)
+          VERSION=$(echo "$VERSION_LINE" | sed -E 's/.*[\'\'\"]([0-9]+\.[0-9]+\.[0-9]+)[\'\'\"].*/\1/')
+          MAJOR=$(echo $VERSION | cut -d. -f1)
+          MINOR=$(echo $VERSION | cut -d. -f2)
+          PATCH=$(echo $VERSION | cut -d. -f3)
+          NEW_PATCH=$((PATCH + 1))
+          NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
+          sed -i.bak "s/version = '[0-9]*\.[0-9]*\.[0-9]*'/version = '$NEW_VERSION'/" build.gradle
+          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add build.gradle
+          git commit -m "Bump version to $NEW_VERSION" || echo "No changes to commit"
 
-      - name: Update Version
-        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
-        run: |
-          mvn versions:set -DnewVersion=${{ steps.calc_version.outputs.NEXT_VERSION }}
-          git commit -am "Bump version to ${{ steps.calc_version.outputs.NEXT_VERSION }}"
-
-      - name: Build with Maven
-        run: mvn -B package assembly:single
+      - name: Build with Gradle
+        run: ./gradlew build || gradle build
 
       - name: Test jar contents
         run: |
-          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-          jar tf target/useless-program-${VERSION}-jar-with-dependencies.jar
+          ls -lh build/libs/
+          jar tf build/libs/*.jar
 
       - name: Run application from jar
         run: |
-          VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
-          (java -jar target/useless-program-${VERSION}-jar-with-dependencies.jar & P=$!; sleep 10; kill -9 $P 2>/dev/null || true)
+          (java -jar build/libs/*.jar & P=$!; sleep 10; kill -9 $P 2>/dev/null || true)
 
       - name: Create Release
         if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: v${{ steps.calc_version.outputs.NEXT_VERSION }}
-          name: Release v${{ steps.calc_version.outputs.NEXT_VERSION }}
-          files: target/useless-program-${{ steps.calc_version.outputs.NEXT_VERSION }}-jar-with-dependencies.jar
+          tag_name: v${{ steps.bump_version.outputs.new_version }}
+          name: Release v${{ steps.bump_version.outputs.new_version }}
+          files: build/libs/*.jar
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
