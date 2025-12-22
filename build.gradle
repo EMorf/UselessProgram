@@ -10,8 +10,8 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.bytedeco:javacv:1.5.10'
-    implementation 'org.bytedeco:javacv-platform:1.5.10'
+    implementation 'org.bytedeco:javacv:1.5.12'
+    implementation 'org.bytedeco:javacv-platform:1.5.12'
     testImplementation 'junit:junit:4.13.2'
 }
 
