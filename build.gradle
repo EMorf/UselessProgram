@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'edu.sc.seis.launch4j' version '3.0.6'
 }
 
 group = 'com.example'
@@ -20,11 +21,16 @@ test {
 }
 
 jar {
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     manifest {
         attributes 'Main-Class': 'Main'
     }
-    from {
-        configurations.runtimeClasspath.findAll { it.isFile() }.collect { zipTree(it) }
-    }
+}
+
+launch4j {
+    mainClassName = 'Main'
+    headerType = 'gui'
+    outfile = 'UselessProgram.exe'
+    jreMinVersion = '17'
+    initialHeapSize = 128
+    maxHeapSize = 1024
 }
