@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'edu.sc.seis.launch4j' version '3.0.5'
 }
 
 group = 'com.example'
@@ -12,7 +13,9 @@ repositories {
 dependencies {
     implementation 'org.bytedeco:javacv:1.5.12'
     implementation 'org.bytedeco:javacv-platform:1.5.12'
+    implementation 'javazoom:jlayer:1.0.1'
     testImplementation 'junit:junit:4.13.2'
+    testRuntimeOnly 'org.junit.vintage:junit-vintage-engine:5.10.2'
 }
 
 test {
@@ -27,4 +30,14 @@ jar {
     from {
         configurations.runtimeClasspath.findAll { it.isFile() }.collect { zipTree(it) }
     }
+}
+
+launch4j {
+    mainClassName = 'Main'
+    headerType = 'gui'
+    outfile = "UselessProgram.exe"
+    jarTask = project.tasks.jar
+    downloadUrl = "http://java.com/download"
+    variables = ["-Dfile.encoding=UTF-8"]
+    jreMinVersion = '17'
 }
