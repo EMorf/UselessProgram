@@ -1,12 +1,24 @@
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.Timer;
+import java.awt.AWTException;
+import java.awt.Dimension;
+import java.awt.Graphics2D;
+import java.awt.GridLayout;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.Robot;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.security.SecureRandom;
 import java.io.InputStream;
 import javax.imageio.ImageIO;
-import org.bytedeco.javacv.*;
+import org.bytedeco.javacv.Frame;
+import org.bytedeco.javacv.Java2DFrameConverter;
+import org.bytedeco.javacv.OpenCVFrameGrabber;
 
 /**
  * Main class that serves as the entry point for the application.
@@ -154,7 +166,7 @@ class BackgroundSnap {
      */
     private BufferedImage takeWebcamPhoto() {
         try {
-            org.bytedeco.javacv.Frame frame = camera.grab();
+            Frame frame = camera.grab();
             if (frame != null) {
                 return converter.convert(frame);
             }
