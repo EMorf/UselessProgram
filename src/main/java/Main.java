@@ -7,7 +7,6 @@ import java.security.SecureRandom;
 import java.io.InputStream;
 import javax.imageio.ImageIO;
 import org.bytedeco.javacv.*;
-import org.bytedeco.javacv.Frame;
 
 /**
  * Main class that serves as the entry point for the application.
@@ -146,7 +145,7 @@ class BackgroundSnap {
      */
     private BufferedImage takeWebcamPhoto() {
         try {
-            Frame frame = camera.grab();
+            org.bytedeco.javacv.Frame frame = camera.grab();
             if (frame != null) {
                 return converter.convert(frame);
             }
