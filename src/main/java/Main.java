@@ -6,7 +6,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.util.Random;
+import java.security.SecureRandom;
 import java.io.InputStream;
 import javax.imageio.ImageIO;
 import org.bytedeco.javacv.*;
@@ -30,7 +30,7 @@ public class Main {
  * displaying them side by side on the screen.
  */
 class BackgroundSnap {
-    private final Random random = new Random();
+    private final SecureRandom random = new SecureRandom();
     private final int minDelay = 5;
     private final int maxDelay = 10;
     private final int displayTime = 3;
