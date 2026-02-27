@@ -98,7 +98,9 @@ jobs:
           git commit -m "[skip ci] Bump version to $NEW_VERSION" || echo "No changes to commit"
 
       - name: Build with Gradle
-        run: ./gradlew build
+        run: |
+          ./gradlew build
+          ./gradlew createExe
 
       - name: Push Version Update
         run: |
@@ -109,7 +111,9 @@ jobs:
         with:
           tag_name: v${{ steps.bump_version.outputs.new_version }}
           name: Release v${{ steps.bump_version.outputs.new_version }}
-          files: build/libs/*.jar
+          files: |
+            build/libs/*.jar
+            build/launch4j/UselessProgram.exe
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
