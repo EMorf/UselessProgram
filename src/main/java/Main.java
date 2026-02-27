@@ -1,23 +1,79 @@
-import javax.swing.*;
-import java.awt.*;
+import java.awt.AWTException;
+import java.awt.Dimension;
+import java.awt.Graphics2D;
+import java.awt.GraphicsEnvironment;
+import java.awt.GridLayout;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.Robot;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.security.SecureRandom;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
+import java.security.SecureRandom;
+import java.util.logging.FileHandler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.SimpleFormatter;
+
 import javax.imageio.ImageIO;
-import org.bytedeco.javacv.*;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
+
+import org.bytedeco.javacv.Frame;
+import org.bytedeco.javacv.Java2DFrameConverter;
+import org.bytedeco.javacv.OpenCVFrameGrabber;
 
 /**
  * Main class that serves as the entry point for the application.
  */
 public class Main {
+    private static final Logger logger = Logger.getLogger(Main.class.getName());
+
     /**
      * The main method that starts the BackgroundSnap application.
      * @param args Command line arguments (not used)
      */
     public static void main(String[] args) {
-        new BackgroundSnap().start();
+        setupLogging();
+        logger.info("Starting application...");
+        try {
+            new BackgroundSnap().start();
+        } catch (Throwable t) {
+            logger.log(Level.SEVERE, "Fatal error in application loop", t);
+            // Try to show error dialog safely
+            try {
+                SwingUtilities.invokeLater(() ->
+                    JOptionPane.showMessageDialog(null, "Fatal error: " + t.getMessage(), "Error", JOptionPane.ERROR_MESSAGE)
+                );
+            } catch (Throwable dialogError) {
+                logger.log(Level.SEVERE, "Failed to show error dialog", dialogError);
+            }
+        }
+    }
+
+    private static void setupLogging() {
+        try {
+            // Log to a file
+            FileHandler fileHandler = new FileHandler("useless_program.log", true);
+            fileHandler.setFormatter(new SimpleFormatter());
+            Logger rootLogger = Logger.getLogger("");
+            rootLogger.addHandler(fileHandler);
+            rootLogger.setLevel(Level.INFO);
+
+            // Redirect stderr to a file to capture native crashes or uncaught exceptions printed to stderr
+            System.setErr(new PrintStream(new FileOutputStream("useless_program_err.log", true)));
+        } catch (IOException e) {
+            e.printStackTrace(); // Can't do much else if logging fails
+        }
     }
 }
 
@@ -26,40 +82,59 @@ public class Main {
  * displaying them side by side on the screen.
  */
 class BackgroundSnap {
+    private static final Logger logger = Logger.getLogger(BackgroundSnap.class.getName());
     private final SecureRandom random = new SecureRandom();
     private final int minDelay = 5;
     private final int maxDelay = 10;
     private final int displayTime = 3;
-    private final OpenCVFrameGrabber camera;
+    private OpenCVFrameGrabber camera;
     private final Java2DFrameConverter converter;
     private BufferedImage dwarfImage;
-    private final Dimension screenSize;
-    private final int targetWidth;
-    private final int targetHeight;
+    private Dimension screenSize;
+    private int targetWidth;
+    private int targetHeight;
     private volatile Robot robot;
-    private final Rectangle screenRect;
+    private Rectangle screenRect;
 
     /**
      * Constructor initializes the camera, screen dimensions, and loads the fallback dwarf image.
      * Sets up the webcam capture and configures initial display parameters.
      */
     public BackgroundSnap() {
-        camera = new OpenCVFrameGrabber(0);
         converter = new Java2DFrameConverter();
-        screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        screenRect = new Rectangle(screenSize);
-        targetWidth = screenSize.width / 2;  // Half the screen width for each image
-        targetHeight = screenSize.height;
+
         try {
-            camera.start();
-        } catch (Exception e) {
-            System.err.println("Failed to start camera: " + e.getMessage());
+            if (!GraphicsEnvironment.isHeadless()) {
+                 screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+            } else {
+                 screenSize = new Dimension(1920, 1080); // Fallback for headless environments (like CI)
+                 logger.warning("Headless environment detected, using default screen size.");
+            }
+        } catch (Throwable t) {
+            logger.log(Level.SEVERE, "Failed to get screen size", t);
+            screenSize = new Dimension(800, 600);
         }
+
+        screenRect = new Rectangle(screenSize);
+        targetWidth = screenSize.width / 2;
+        targetHeight = screenSize.height;
+
+        try {
+            camera = new OpenCVFrameGrabber(0);
+            camera.start();
+        } catch (Throwable e) {
+            logger.log(Level.WARNING, "Failed to start camera: " + e.getMessage(), e);
+            camera = null;
+        }
+
         try {
             robot = new Robot();
         } catch (AWTException e) {
-            System.err.println("Failed to initialize Robot: " + e.getMessage());
+            logger.log(Level.WARNING, "Failed to initialize Robot: " + e.getMessage(), e);
+        } catch (Throwable t) {
+             logger.log(Level.SEVERE, "Unexpected error initializing Robot", t);
         }
+
         loadDwarfImage();
     }
 
@@ -68,15 +143,15 @@ class BackgroundSnap {
      * The image is scaled to fit the target dimensions.
      */
     private void loadDwarfImage() {
-        try {
-            InputStream is = getClass().getResourceAsStream("/dwarf.jpg");
+        try (InputStream is = getClass().getResourceAsStream("/dwarf.jpg")) {
             if (is != null) {
                 dwarfImage = ImageIO.read(is);
                 dwarfImage = scaleImage(dwarfImage);
-                is.close();
+            } else {
+                logger.warning("Dwarf image resource not found.");
             }
         } catch (Exception e) {
-            System.err.println("Failed to load dwarf image: " + e.getMessage());
+            logger.log(Level.WARNING, "Failed to load dwarf image: " + e.getMessage(), e);
         }
     }
 
@@ -110,9 +185,11 @@ class BackgroundSnap {
      * The loop runs indefinitely, waiting for random intervals between captures.
      */
     public void start() {
+        logger.info("Entering main loop...");
         while (true) {
             try {
                 int delay = minDelay + random.nextInt(maxDelay - minDelay + 1);
+                logger.info("Waiting for " + delay + " seconds.");
                 Thread.sleep(delay * 1000L);
                 
                 // Take and scale screenshot first
@@ -127,9 +204,19 @@ class BackgroundSnap {
                     photo = scaleImage(photo);
                 }
                 
-                showImages(screenshot, photo);
-            } catch (Exception e) {
-                System.err.println("Error in main loop: " + e.getMessage());
+                final BufferedImage finalScreenshot = screenshot;
+                final BufferedImage finalPhoto = photo;
+
+                SwingUtilities.invokeLater(() -> showImages(finalScreenshot, finalPhoto));
+
+            } catch (InterruptedException ie) {
+                 logger.info("Main loop interrupted. Exiting.");
+                 Thread.currentThread().interrupt();
+                 break;
+            } catch (Throwable e) {
+                logger.log(Level.SEVERE, "Error in main loop: " + e.getMessage(), e);
+                // Optional: sleep a bit to avoid tight loop on persistent error
+                try { Thread.sleep(5000); } catch (InterruptedException ie) { break; }
             }
         }
     }
@@ -139,11 +226,16 @@ class BackgroundSnap {
      * @return A BufferedImage containing the screenshot
      * @throws Exception if the screenshot capture fails
      */
-    private BufferedImage takeScreenshot() throws Exception {
-        if (robot == null) {
-            robot = new Robot();
+    private BufferedImage takeScreenshot() {
+        try {
+            if (robot == null) {
+                robot = new Robot();
+            }
+            return robot.createScreenCapture(screenRect);
+        } catch (Throwable t) {
+            logger.log(Level.WARNING, "Failed to take screenshot: " + t.getMessage(), t);
+            return null;
         }
-        return robot.createScreenCapture(screenRect);
     }
     
 
@@ -153,13 +245,16 @@ class BackgroundSnap {
      * @return A BufferedImage from the webcam or the dwarf image if capture fails
      */
     private BufferedImage takeWebcamPhoto() {
+        if (camera == null) return dwarfImage;
+
         try {
-            org.bytedeco.javacv.Frame frame = camera.grab();
+            Frame frame = camera.grab();
             if (frame != null) {
                 return converter.convert(frame);
             }
-        } catch (Exception e) {
-            System.err.println("Webcam error: " + e.getMessage());
+        } catch (Throwable e) {
+            logger.log(Level.WARNING, "Webcam error: " + e.getMessage(), e);
+            // Try to restart camera on error? Maybe later.
         }
         return dwarfImage; // Return dwarf image as fallback
     }
@@ -171,24 +266,28 @@ class BackgroundSnap {
      * @param img2 The second image to display (usually the webcam photo)
      */
     private void showImages(BufferedImage img1, BufferedImage img2) {
-        JFrame frame = new JFrame("Snap!");
-        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-        frame.setAlwaysOnTop(true);
-        frame.setUndecorated(true);
-        frame.setLayout(new GridLayout(1, 2));
-        
-        if (img1 != null) frame.add(new JLabel(new ImageIcon(img1)));
-        if (img2 != null) frame.add(new JLabel(new ImageIcon(img2)));
-        
-        frame.pack();
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
+        try {
+            JFrame frame = new JFrame("Snap!");
+            frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+            frame.setAlwaysOnTop(true);
+            frame.setUndecorated(true);
+            frame.setLayout(new GridLayout(1, 2));
 
-        new Timer(displayTime * 1000, new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                frame.setVisible(false);
-                frame.dispose();
-            }
-        }).start();
+            if (img1 != null) frame.add(new JLabel(new ImageIcon(img1)));
+            if (img2 != null) frame.add(new JLabel(new ImageIcon(img2)));
+
+            frame.pack();
+            frame.setLocationRelativeTo(null);
+            frame.setVisible(true);
+
+            new Timer(displayTime * 1000, new ActionListener() {
+                public void actionPerformed(ActionEvent e) {
+                    frame.setVisible(false);
+                    frame.dispose();
+                }
+            }).start();
+        } catch (Throwable t) {
+            logger.log(Level.SEVERE, "Error displaying images: " + t.getMessage(), t);
+        }
     }
 }
