@@ -21,8 +21,12 @@ test {
 }
 
 jar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     manifest {
         attributes 'Main-Class': 'Main'
+    }
+    from {
+        configurations.runtimeClasspath.findAll { it.isFile() }.collect { zipTree(it) }
     }
 }
 
