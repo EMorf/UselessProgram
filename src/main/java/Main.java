@@ -173,7 +173,7 @@ class BackgroundSnap {
         frame.setLayout(new GridLayout(1, 2));
         
         if (img1 != null) frame.add(new JLabel(new ImageIcon(img1)));
-        if (img2 != null) frame.add(new JLabel(new ImageIcon(img2 != null ? img2 : dwarfImage)));
+        if (img2 != null) frame.add(new JLabel(new ImageIcon(img2)));
         
         frame.pack();
         frame.setLocationRelativeTo(null);
