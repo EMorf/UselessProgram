@@ -36,6 +36,8 @@ class BackgroundSnap {
     private final Dimension screenSize;
     private final int targetWidth;
     private final int targetHeight;
+    private volatile Robot robot;
+    private final Rectangle screenRect;
 
     /**
      * Constructor initializes the camera, screen dimensions, and loads the fallback dwarf image.
@@ -45,12 +47,18 @@ class BackgroundSnap {
         camera = new OpenCVFrameGrabber(0);
         converter = new Java2DFrameConverter();
         screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+        screenRect = new Rectangle(screenSize);
         targetWidth = screenSize.width / 2;  // Half the screen width for each image
         targetHeight = screenSize.height;
         try {
             camera.start();
         } catch (Exception e) {
             System.err.println("Failed to start camera: " + e.getMessage());
+        }
+        try {
+            robot = new Robot();
+        } catch (AWTException e) {
+            System.err.println("Failed to initialize Robot: " + e.getMessage());
         }
         loadDwarfImage();
     }
@@ -132,8 +140,9 @@ class BackgroundSnap {
      * @throws Exception if the screenshot capture fails
      */
     private BufferedImage takeScreenshot() throws Exception {
-        Robot robot = new Robot();
-        Rectangle screenRect = new Rectangle(screenSize);
+        if (robot == null) {
+            robot = new Robot();
+        }
         return robot.createScreenCapture(screenRect);
     }
     
