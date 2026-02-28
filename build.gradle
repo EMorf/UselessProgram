@@ -17,7 +17,7 @@ dependencies {
 }
 
 test {
-    useJUnitPlatform()
+    // useJUnitPlatform() // Removed for JUnit 4
 }
 
 jar {
