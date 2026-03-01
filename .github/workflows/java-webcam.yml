@@ -26,7 +26,7 @@ jobs:
           cache: 'gradle'
 
       - name: Build with Gradle
-        run: ./gradlew build
+        run: ./gradlew build --no-daemon
 
       - name: Install xvfb (Linux)
         if: runner.os == 'Linux'
@@ -99,8 +99,8 @@ jobs:
 
       - name: Build with Gradle
         run: |
-          ./gradlew build
-          ./gradlew createExe
+          ./gradlew build --no-daemon
+          ./gradlew createExe --no-daemon
 
       - name: Push Version Update
         run: |
