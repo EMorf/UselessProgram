@@ -47,14 +47,14 @@ public class Main {
         logger.info("Starting application...");
         try {
             new BackgroundSnap().start();
-        } catch (Throwable t) {
+        } catch (Exception t) {
             logger.log(Level.SEVERE, "Fatal error in application loop", t);
             // Try to show error dialog safely
             try {
                 SwingUtilities.invokeLater(() ->
                     JOptionPane.showMessageDialog(null, "Fatal error: " + t.getMessage(), "Error", JOptionPane.ERROR_MESSAGE)
                 );
-            } catch (Throwable dialogError) {
+            } catch (Exception dialogError) {
                 logger.log(Level.SEVERE, "Failed to show error dialog", dialogError);
             }
         }
@@ -110,7 +110,7 @@ class BackgroundSnap {
                  screenSize = new Dimension(1920, 1080); // Fallback for headless environments (like CI)
                  logger.warning("Headless environment detected, using default screen size.");
             }
-        } catch (Throwable t) {
+        } catch (Exception | LinkageError t) {
             logger.log(Level.SEVERE, "Failed to get screen size", t);
             screenSize = new Dimension(800, 600);
         }
@@ -122,7 +122,7 @@ class BackgroundSnap {
         try {
             camera = new OpenCVFrameGrabber(0);
             camera.start();
-        } catch (Throwable e) {
+        } catch (Exception | LinkageError e) {
             logger.log(Level.WARNING, "Failed to start camera: " + e.getMessage(), e);
             camera = null;
         }
@@ -131,7 +131,7 @@ class BackgroundSnap {
             robot = new Robot();
         } catch (AWTException e) {
             logger.log(Level.WARNING, "Failed to initialize Robot: " + e.getMessage(), e);
-        } catch (Throwable t) {
+        } catch (Exception | LinkageError t) {
              logger.log(Level.SEVERE, "Unexpected error initializing Robot", t);
         }
 
@@ -213,7 +213,7 @@ class BackgroundSnap {
                  logger.info("Main loop interrupted. Exiting.");
                  Thread.currentThread().interrupt();
                  break;
-            } catch (Throwable e) {
+            } catch (Exception e) {
                 logger.log(Level.SEVERE, "Error in main loop: " + e.getMessage(), e);
                 // Optional: sleep a bit to avoid tight loop on persistent error
                 try { Thread.sleep(5000); } catch (InterruptedException ie) { break; }
@@ -232,7 +232,7 @@ class BackgroundSnap {
                 robot = new Robot();
             }
             return robot.createScreenCapture(screenRect);
-        } catch (Throwable t) {
+        } catch (Exception | LinkageError t) {
             logger.log(Level.WARNING, "Failed to take screenshot: " + t.getMessage(), t);
             return null;
         }
@@ -252,7 +252,7 @@ class BackgroundSnap {
             if (frame != null) {
                 return converter.convert(frame);
             }
-        } catch (Throwable e) {
+        } catch (Exception | LinkageError e) {
             logger.log(Level.WARNING, "Webcam error: " + e.getMessage(), e);
             // Try to restart camera on error? Maybe later.
         }
@@ -286,7 +286,7 @@ class BackgroundSnap {
                     frame.dispose();
                 }
             }).start();
-        } catch (Throwable t) {
+        } catch (Exception t) {
             logger.log(Level.SEVERE, "Error displaying images: " + t.getMessage(), t);
         }
     }
